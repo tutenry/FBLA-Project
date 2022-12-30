@@ -1,18 +1,36 @@
+//Access the canvas
 var canvas = document.getElementById("canvas");
-
 var display = canvas.getContext("2d");
 
-display.fillStyle ="red";
-
-var basket = new Basket(canvas.width/2 - canvas.width/16, canvas.height/1.4, 126, 60);
-
-
-let keyd = false;
-let key = "";
+//Setup variables
 var running = true;
+var homescreenLoaded = false;
+var onHomescreen = true;
+var leaderboardVisible = false;
+var instructionsVisible = false;
+var homescreenLoopID = 0;
+var gameLoopID = 0;
+
+//Initialize images
+var homescreenImg;
+var playImg;
+var questionImg;
+var trophyImg;
+var backgroundImg;
+var leaderboardImg;
+var instructionsImg;
+
+//Game variables
 var win = false;
 var lose = false;
 var letters = [];
+var caught_letters = [];
+var basket;
+
+//Tracking key movement
+let keyd = false;
+let key = "";
+
 document.addEventListener("keydown", function(event){
     if (event.code == "KeyA" || event.code == "KeyD"){
         keyd = true;
@@ -21,6 +39,11 @@ document.addEventListener("keydown", function(event){
     if (event.code === "Escape"){
         //Exit program
         running = false;
+        setTimeout(function(){
+            clearInterval(homescreenLoopID);
+            clearInterval(gameLoopID);
+        }, 100);
+        
     }
 });
 
@@ -30,12 +53,19 @@ document.addEventListener("keyup", function(event){
     }
 });
 
-handleHomescreen();
+document.addEventListener("click", handleClicks);
+document.addEventListener("mousemove", function(event){
+    mouseX = event.clientX;
+    mouseY = event.clientY;
+});
+
+//Load the images
+loadImages();
+//Run game
+homescreenLoopID = setInterval(handleHomescreen, 20);
 
 
-
-let caught_letters = [];
-
+//Main game loop
 function runGame(){
     //Resize screen if needed
     canvas.height = window.innerHeight;
@@ -77,7 +107,6 @@ function runGame(){
 }
 
 
-
 function createLetters(){
     let num = Math.floor(Math.random()*letter_probability);
     if (num == 1){
@@ -98,9 +127,7 @@ function createLetters(){
 function draw(){
     clear();
 
-    //Draw background image
-    let backgroundImg = new Image();
-    backgroundImg.src = "Images/PixelBackground.png"
+    //Draw background imag
     display.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
 
     //Draw basket
@@ -116,7 +143,7 @@ function draw(){
     for (let i = 0; i < caught_letters.length; i++){
         printString+=caught_letters[i].letter;
     }
-    display.fillStyle = "rgb(0,0,0)"
+    display.fillStyle = "rgb(0,0,0)";
     display.font = "50px Serif";
     display.fillText(printString, 50, 50);
 
@@ -136,13 +163,13 @@ function draw(){
             mistake = true;
         }
 
-        let img = getFrameImg(word[i], caught, mistake);
-        let distance_between = i*(img.width + spacer_width);
-        let total_width = word.length * img.width;
-        let total_spacers = word.length * (img.width + spacer_width) - total_width;
+        let frameImg = getFrameImg(word[i], caught, mistake);
+        let distance_between = i*(frameImg.width + spacer_width);
+        let total_width = word.length * frameImg.width;
+        let total_spacers = word.length * (frameImg.width + spacer_width) - total_width;
         
         
-        display.drawImage(img, canvas.width/2 - total_width/2 + distance_between - total_spacers/2, 50, 50, 50);
+        display.drawImage(frameImg, canvas.width/2 - total_width/2 + distance_between - total_spacers/2, 50, 50, 50);
         
     }
 }
@@ -154,7 +181,7 @@ function winGame(){
     draw();
 
     if (confetti.length < max_confetti){
-        if (Math.floor(Math.random()*3)==1){
+        if (Math.floor(Math.random()*confetti_probability)==0){
             //Make confetti
             let cp = new Confetti();
             if (cp.collides == false){
@@ -176,42 +203,114 @@ function loseGame(){
     display.fillText("You Lose :(", 500, 500);
 }
 
-function clear(){
-    display.clearRect(0,0,canvas.width, canvas.height);
-}
 
-function getFrameImg(letter, caught, mistake){
-    let img = new Image();
 
-    if (caught){
-        img.src = "Images/Pixel" + letter + "2.png";
-    }
-    else if (mistake){
-        img.src = "Images/Pixel" + letter + "3.png";
-    }
-    else{
-        img.src = "Images/Pixel" + letter + ".png";
-    }
-    return img;
-}
-
+//Homescreen handling
 function handleHomescreen(){
+    if (running == false){clear();return;}
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
     drawHomescreen();
-
-    /*if (running == true){
-        setInterval(runGame, 20);
-    }
-    */
 }
 
 
 
 function drawHomescreen(){
     clear();
-    let img = new Image();
-    img.src = "Images/PixelHomescreen.png";
+    display.drawImage(homescreenImg, 0, 0, canvas.width, canvas.height);
 
-    display.drawImage(img, 0, 0, canvas.width, canvas.height);
-    console.log("drawing");
+    
+    if (leaderboardVisible){
+        display.drawImage(leaderboardImg, 50, 75);
+    }
+    if (instructionsVisible){
+        display.drawImage(instructionsImg, canvas.width - 450, 75);
+        display.font = "50px Serif";
+        display.fillText("Instructions", canvas.width-450 + 75, 150, 300);
+    }
+    
+    display.drawImage(playImg, canvas.width/2 - playImg.width/2, 150);
+    display.drawImage(trophyImg, canvas.width/2 - trophyImg.width/2, 350);
+    display.drawImage(questionImg, canvas.width/2 - questionImg.width/2, 500);
+
+    
+    homescreenLoaded = true;
 }
     
+function handleClicks(){
+    
+    if (homescreenLoaded == false){return;}
+
+    //Play button
+    if (onHomescreen){
+        if (mouseX >= canvas.width/2 - playImg.width/2 && mouseX <= canvas.width/2 - playImg.width/2 + playImg.width && mouseY >= 150 && mouseY <= 150 + playImg.height){
+            //Play game
+            clearInterval(homescreenLoopID);
+            onHomescreen = false;
+            basket = new Basket(canvas.width/2 - canvas.width/16, canvas.height/1.4, 126, 60);
+            gameLoopID = setInterval(runGame, 20);
+        }
+    }
+
+    if (onHomescreen){
+        if (mouseX >= canvas.width/2 - trophyImg.width/2 && mouseX <= canvas.width/2 - trophyImg.width/2 + trophyImg.width && mouseY >= 350 && mouseY <= 350 + trophyImg.height){
+            //Toggle leaderboard
+            leaderboardVisible = !leaderboardVisible;
+        }
+    }
+
+    if (onHomescreen){
+        if (mouseX >= canvas.width/2 - questionImg.width/2 && mouseX <= canvas.width/2 - questionImg.width/2 + questionImg.width && mouseY >= 500 && mouseY <= 500 + trophyImg.height){
+            //Toggle instructions
+            instructionsVisible = !instructionsVisible;
+        }
+    }
+
+    
+}
+
+
+
+function loadImages(){
+    homescreenImg = new Image();
+    homescreenImg.src = "Images/PixelHomescreen.png";
+
+    playImg = new Image();
+    playImg.src = "Images/PixelPlay.png";
+
+    questionImg = new Image();
+    questionImg.src = "Images/PixelQuestion.png";
+
+    trophyImg = new Image();
+    trophyImg.src = "Images/PixelTrophy.png";
+
+    backgroundImg = new Image();
+    backgroundImg.src = "Images/PixelBackground.png";
+
+    leaderboardImg = new Image();
+    leaderboardImg.src = "Images/PixelLeaderboard.png";
+
+    instructionsImg = new Image();
+    instructionsImg.src = "Images/PixelInstructions.png";
+
+    frameImg = new Image();
+}
+
+function getFrameImg(letter, caught, mistake){
+    let frameImg = new Image();
+    if (caught){
+        frameImg.src = "Images/Pixel" + letter + "2.png";
+    }
+    else if (mistake){
+        frameImg.src = "Images/Pixel" + letter + "3.png";
+    }
+    else{
+        frameImg.src = "Images/Pixel" + letter + ".png";
+    }
+
+    return frameImg;
+}
+
+function clear(){
+    display.clearRect(0,0,canvas.width, canvas.height);
+}
