@@ -8,6 +8,7 @@ var homescreenLoaded = false;
 var onHomescreen = true;
 var leaderboardVisible = false;
 var instructionsVisible = false;
+var selectionVisible = false;
 var homescreenLoopID = 0;
 var gameLoopID = 0;
 
@@ -16,9 +17,20 @@ var homescreenImg;
 var playImg;
 var questionImg;
 var trophyImg;
+var backImg;
 var backgroundImg;
 var leaderboardImg;
 var instructionsImg;
+var levelsImg;
+var selectionImg;
+var easyImg;
+var mediumImg;
+var hardImg;
+var extremeImg;
+var easyImg2;
+var mediumImg2;
+var hardImg2;
+var extremeImg2;
 
 //Game variables
 var win = false;
@@ -53,6 +65,7 @@ document.addEventListener("keyup", function(event){
     }
 });
 
+//Handle mouse actions
 document.addEventListener("click", handleClicks);
 document.addEventListener("mousemove", function(event){
     mouseX = event.clientX;
@@ -71,6 +84,7 @@ function runGame(){
     canvas.height = window.innerHeight;
     canvas.width = window.innerWidth;
 
+    
     if (running && win == false && lose == false){
         basket.draw();
         basket.catch();
@@ -130,6 +144,8 @@ function draw(){
     //Draw background imag
     display.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
 
+    
+
     //Draw basket
     basket.draw(canvas.height/1.4);
     
@@ -137,8 +153,12 @@ function draw(){
     for (let i = 0; i < letters.length; i++){
         letters[i].draw();
     }
+
+    //Draw back button
+    display.drawImage(backImg, 50, canvas.height - backImg.height - 20);
     
     //TEMPORARY Draw caught letters
+    /*
     let printString = "";
     for (let i = 0; i < caught_letters.length; i++){
         printString+=caught_letters[i].letter;
@@ -146,7 +166,7 @@ function draw(){
     display.fillStyle = "rgb(0,0,0)";
     display.font = "50px Serif";
     display.fillText(printString, 50, 50);
-
+    */
     
 
     //Draw word squares
@@ -162,14 +182,23 @@ function draw(){
         else if (caught_letters[i] != undefined && word[i] != caught_letters[i].letter){
             mistake = true;
         }
-
+        spacer_width = 10;
         let frameImg = getFrameImg(word[i], caught, mistake);
         let distance_between = i*(frameImg.width + spacer_width);
         let total_width = word.length * frameImg.width;
         let total_spacers = word.length * (frameImg.width + spacer_width) - total_width;
         
+        if (total_width + total_spacers >= canvas.width){
+            spacer_width = 5;
+            distance_between = i*(25 + spacer_width);
+            total_width = word.length * 25;
+            total_spacers = word.length * (25 + spacer_width) - total_width;
+            display.drawImage(frameImg, canvas.width/2 - total_width/2 + distance_between - total_spacers/2, 50, 25, 25);
+        }
+        else{
+            display.drawImage(frameImg, canvas.width/2 - total_width/2 + distance_between - total_spacers/2, 50, 50, 50);
+        }
         
-        display.drawImage(frameImg, canvas.width/2 - total_width/2 + distance_between - total_spacers/2, 50, 50, 50);
         
     }
 }
@@ -219,18 +248,71 @@ function drawHomescreen(){
     clear();
     display.drawImage(homescreenImg, 0, 0, canvas.width, canvas.height);
 
-    
+    if (selectionVisible){
+        display.drawImage(levelsImg, 50, 75);
+
+        //Draw level buttons
+        if (difficulty == "Easy"){
+            display.drawImage(easyImg2, 50 + levelsImg.width/2 - easyImg2.width/2, 150);
+        }
+        else{
+            display.drawImage(easyImg, 50 + levelsImg.width/2 - easyImg.width/2, 150);
+        }
+        if (difficulty == "Medium"){
+            display.drawImage(mediumImg2, 50 + levelsImg.width/2 - mediumImg2.width/2, 242);
+        }
+        else{
+            display.drawImage(mediumImg, 50 + levelsImg.width/2 - mediumImg.width/2, 242);
+        }
+        if (difficulty == "Hard"){
+            display.drawImage(hardImg2, 50 + levelsImg.width/2 - hardImg2.width/2, 334);
+        }
+        else{
+            display.drawImage(hardImg, 50 + levelsImg.width/2 - hardImg.width/2, 334);
+        }
+        if (difficulty == "Extreme"){
+            display.drawImage(extremeImg2, 50 + levelsImg.width/2 - extremeImg2.width/2, 426);
+        }
+        else{
+            display.drawImage(extremeImg, 50 + levelsImg.width/2 - extremeImg.width/2, 426);
+        }
+    }
     if (leaderboardVisible){
-        display.drawImage(leaderboardImg, 50, 75);
+        display.drawImage(leaderboardImg, canvas.width - 450, 75);
     }
     if (instructionsVisible){
+        //Draw instructions
+        
+        //Frame
         display.drawImage(instructionsImg, canvas.width - 450, 75);
+
+        //Text
         display.font = "50px Serif";
-        display.fillText("Instructions", canvas.width-450 + 75, 150, 300);
+        display.fillText("How To Play", canvas.width-450 + 70, 140, 300);
+        display.font = "20px Serif";
+        display.fillText("You are given a word, and as letters", canvas.width - 450 + 40, 75 + 90);
+        display.fillText("fall from the sky, you have to catch", canvas.width - 450 + 40, 75 + 115);
+        display.fillText("the letters which make up your word", canvas.width - 450 + 40, 75 + 140);
+        display.fillText("in your basket.", canvas.width - 450 + 40, 75 + 165);
+        
+        display.fillText("Watch out - catching the wrong letters", canvas.width - 450 + 40, 75 + 200);
+        display.fillText("will cause a miss, and if you finish your", canvas.width - 450 + 40, 75 + 225);
+        display.fillText("word with any misses, you lose.", canvas.width - 450 + 40, 75 + 250);
+
+        display.fillText("To remove misses, catch a backspace!", canvas.width - 450 + 40, 75 + 285);
+        display.fillText("But be cautious around backspaces, as", canvas.width - 450 + 40, 75 + 310);
+        display.fillText("they can also remove correct letters!", canvas.width - 450 + 40, 75 + 335);
+
+        display.fillText("To move your basket, use 'a' for left", canvas.width - 450 + 40, 75 + 370);
+        display.fillText("and 'd' for right", canvas.width - 450 + 40, 75 + 395);
+
+        display.fillText("To stop the program, press escape", canvas.width - 450 + 40, 75 + 430);
     }
     
+    //Draw buttons
     display.drawImage(playImg, canvas.width/2 - playImg.width/2, 150);
-    display.drawImage(trophyImg, canvas.width/2 - trophyImg.width/2, 350);
+    display.drawImage(trophyImg, canvas.width/2 + 20, 350);
+    display.drawImage(selectionImg, canvas.width/2 - selectionImg.width - 20, 350);
     display.drawImage(questionImg, canvas.width/2 - questionImg.width/2, 500);
 
     
@@ -241,32 +323,90 @@ function handleClicks(){
     
     if (homescreenLoaded == false){return;}
 
-    //Play button
+    //Back button
+    if (onHomescreen == false){
+        if (mouseX >= 50 && mouseX <= 50 + backImg.width && mouseY >= canvas.height - backImg.height - 20 && mouseY <= canvas.height - 20){
+            onHomescreen = true;
+            resetGame();
+            homescreenLoopID = setInterval(handleHomescreen, 20);
+            
+        }
+    }
+
     if (onHomescreen){
+        //Play button
         if (mouseX >= canvas.width/2 - playImg.width/2 && mouseX <= canvas.width/2 - playImg.width/2 + playImg.width && mouseY >= 150 && mouseY <= 150 + playImg.height){
             //Play game
             clearInterval(homescreenLoopID);
+            resetGame();
             onHomescreen = false;
             basket = new Basket(canvas.width/2 - canvas.width/16, canvas.height/1.4, 126, 60);
+            if (difficulty == "Easy"){
+                word = easy_words[Math.floor(Math.random() * easy_words.length)];
+                letter_probability = 41;
+            }
+            else if (difficulty == "Medium"){
+                word = medium_words[Math.floor(Math.random() * medium_words.length)];
+                letter_probability = 31;
+            }
+            else if (difficulty == "Hard"){
+                word = hard_words[Math.floor(Math.random() * hard_words.length)];
+                letter_probability = 21;
+            }
+            else if (difficulty == "Extreme"){
+                word = extreme_words[Math.floor((Math.random() * extreme_words.length))];
+                letter_probability = 11;
+            }
             gameLoopID = setInterval(runGame, 20);
         }
-    }
 
-    if (onHomescreen){
-        if (mouseX >= canvas.width/2 - trophyImg.width/2 && mouseX <= canvas.width/2 - trophyImg.width/2 + trophyImg.width && mouseY >= 350 && mouseY <= 350 + trophyImg.height){
+        if (mouseX >= canvas.width/2 + 20 &&mouseX <= canvas.width/2 + 20 + selectionImg.width && mouseY >= 350 && mouseY <= 350 + selectionImg.height){
             //Toggle leaderboard
+            instructionsVisible = false;
             leaderboardVisible = !leaderboardVisible;
         }
-    }
-
-    if (onHomescreen){
+    
+        if (mouseX >= canvas.width/2 - trophyImg.width - 20 && mouseX <= canvas.width/2 - 20 && mouseY >= 350 && mouseY <= 350 + trophyImg.height){
+            //Toggle level selection
+            selectionVisible = !selectionVisible;
+        }
+    
         if (mouseX >= canvas.width/2 - questionImg.width/2 && mouseX <= canvas.width/2 - questionImg.width/2 + questionImg.width && mouseY >= 500 && mouseY <= 500 + trophyImg.height){
             //Toggle instructions
+            leaderboardVisible = false;
             instructionsVisible = !instructionsVisible;
+        }
+
+        if (selectionVisible){
+            //Easy button
+            if (mouseX >= 50 + levelsImg.width/2 - easyImg.width/2 && mouseX <= 50 + levelsImg.width/2 - easyImg.width/2 + easyImg.width && mouseY >= 150 && mouseY <= 150 + easyImg.height){
+                difficulty = "Easy";
+            }
+            //Medium button
+            if (mouseX >= 50 + levelsImg.width/2 - mediumImg.width/2 && mouseX <= 50 + levelsImg.width/2 - mediumImg.width/2 + mediumImg.width && mouseY >= 242 && mouseY <= 242 + mediumImg.height){
+                difficulty = "Medium";
+            }
+            //Hard button
+            if (mouseX >= 50 + levelsImg.width/2 - hardImg.width/2 && mouseX <= 50 + levelsImg.width/2 - hardImg.width/2 + hardImg.width && mouseY >= 334 && mouseY <= 334 + hardImg.height){
+                difficulty = "Hard";
+            }
+            //Extreme button
+            if (mouseX >= 50 + levelsImg.width/2 - extremeImg.width/2 && mouseX <= 50 + levelsImg.width/2 - extremeImg.width/2 + extremeImg.width && mouseY >= 426 && mouseY <= 426 + extremeImg.height){
+                difficulty = "Extreme";
+            }
         }
     }
 
     
+}
+
+function resetGame(){
+    clearInterval(gameLoopID);
+    letters = [];
+    caught_letters = [];
+    win = false;
+    lose = false;
+    confetti = [];
 }
 
 
@@ -284,6 +424,9 @@ function loadImages(){
     trophyImg = new Image();
     trophyImg.src = "Images/PixelTrophy.png";
 
+    backImg = new Image();
+    backImg.src = "Images/PixelBack.png";
+
     backgroundImg = new Image();
     backgroundImg.src = "Images/PixelBackground.png";
 
@@ -292,6 +435,36 @@ function loadImages(){
 
     instructionsImg = new Image();
     instructionsImg.src = "Images/PixelInstructions.png";
+
+    levelsImg = new Image();
+    levelsImg.src = "Images/PixelLevels.png";
+
+    selectionImg = new Image();
+    selectionImg.src = "Images/PixelSelect.png";
+
+    easyImg = new Image();
+    easyImg.src = "Images/PixelEasy.png";
+
+    mediumImg = new Image();
+    mediumImg.src = "Images/PixelMedium.png";
+
+    hardImg = new Image();
+    hardImg.src = "Images/PixelHard.png";
+
+    extremeImg = new Image();
+    extremeImg.src = "Images/PixelExtreme.png";
+
+    easyImg2 = new Image();
+    easyImg2.src = "Images/PixelEasy2.png";
+
+    mediumImg2 = new Image();
+    mediumImg2.src = "Images/PixelMedium2.png";
+
+    hardImg2 = new Image();
+    hardImg2.src = "Images/PixelHard2.png";
+
+    extremeImg2 = new Image();
+    extremeImg2.src = "Images/PixelExtreme2.png";
 
     frameImg = new Image();
 }

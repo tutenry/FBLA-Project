@@ -61,10 +61,6 @@ class Basket {
                 letter.caught = true;
                 
             }
-
-            
-
-            
         }
     }
 }
