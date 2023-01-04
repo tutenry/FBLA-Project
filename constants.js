@@ -11,6 +11,14 @@ var hard_words = ["ABHORRENT", "CHILDHOOD", "TEXTBOOK", "ABILITIES", "EXPERTISE"
 var extreme_words = ["PNEUMONOULTRAMICROSCOPICSILICOVOLCANOCONIOSIS", "ANTIDISESTABLISHMENTARIANISM", "INCOMPREHENSIBILITY",
 "HIPPOPOTOMONSTROSESQUIPPEDALIOPHOBIA", "INCONSEQUENTIAL", "HYPOTHETICALLY"];
 
+var users = ["Alpha", "Valiant", "Chief", "Stormy", "Starry", "Lucky", "Golden", "Raven", "West", "Elite", "Phoenix", "Titan",
+"Blaze"];
+
+var leaderboard = {};
+var leaderboard_copy = {};
+var rankings = [];
+
+var current_user = users[Math.floor(Math.random()*users.length)];
 var mouseX;
 var mouseY;
 

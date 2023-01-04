@@ -38,6 +38,8 @@ var lose = false;
 var letters = [];
 var caught_letters = [];
 var basket;
+var won = false;
+var lost = false;
 
 //Tracking key movement
 let keyd = false;
@@ -207,6 +209,14 @@ var confetti = [];
 function winGame(){
 
     if (running == false){return;}
+
+    if (won == false){
+        leaderboard[current_user][0] = leaderboard[current_user][0]+1;
+    }
+    
+
+    
+
     draw();
 
     if (confetti.length < max_confetti){
@@ -223,13 +233,26 @@ function winGame(){
     for (let i = 0; i < confetti.length; i++){
         confetti[i].fall();
     }
+
+    if (won == false){
+        won = true;
+    }
 }
 
 function loseGame(){
     if (running == false){return;}
+
+    if (lost == false){
+        leaderboard[current_user][1] = leaderboard[current_user][1]+1;
+    }
+
     draw();
 
     display.fillText("You Lose :(", 500, 500);
+
+    if (lost == false){
+        lost = true;
+    }
 }
 
 
@@ -239,6 +262,16 @@ function handleHomescreen(){
     if (running == false){clear();return;}
     canvas.height = window.innerHeight;
     canvas.width = window.innerWidth;
+
+    if (leaderboard[current_user] == undefined){
+        leaderboard[current_user] = [];
+        leaderboard[current_user][0] = 0;
+        leaderboard[current_user][1] = 0;
+
+        leaderboard_copy[current_user] = [];
+        leaderboard_copy[current_user][0] = 0;
+        leaderboard_copy[current_user][1] = 0;
+    }
     drawHomescreen();
 }
 
@@ -278,7 +311,30 @@ function drawHomescreen(){
         }
     }
     if (leaderboardVisible){
+        //Draw leaderboard
+        orderRankings(leaderboard_copy);
         display.drawImage(leaderboardImg, canvas.width - 450, 75);
+
+        display.font = "40px Serif"
+        let leaderboardText = display.measureText("Leaderboard");
+        display.fillText("Leaderboard", canvas.width-450 + leaderboardImg.width/2 - leaderboardText.width/2, 135);
+
+        display.font = "25px Serif";
+
+        let Ttext = display.measureText("User            Wins : Losses");
+        display.fillText("User           Wins : Losses", canvas.width-450 + leaderboardImg.width/2 - Ttext.width/2, 180);
+
+        let y_pos = 250;
+        for (let i = 0; i < rankings.length; i++){
+            let text = display.measureText(rankings[i] + "             " + leaderboard[rankings[i]][0] + " : " + leaderboard[rankings[i]][1]);
+            display.fillText(rankings[i] + "             " + leaderboard[rankings[i]][0] + " : " + leaderboard[rankings[i]][1], canvas.width-450 + leaderboardImg.width/2 - text.width/2, y_pos);
+            let Btext = display.measureText("_____________________");
+            display.fillText("_____________________", canvas.width-450 + leaderboardImg.width/2 - Btext.width/2, y_pos + 10);
+            y_pos+=50;
+        }
+        
+        let user = display.measureText("Your user: "+current_user);
+        display.fillText("Your user: "+current_user, canvas.width-450 + leaderboardImg.width/2 - user.width/2, 540);
     }
     if (instructionsVisible){
         //Draw instructions
@@ -287,8 +343,9 @@ function drawHomescreen(){
         display.drawImage(instructionsImg, canvas.width - 450, 75);
 
         //Text
-        display.font = "50px Serif";
-        display.fillText("How To Play", canvas.width-450 + 70, 140, 300);
+        display.font = "40px Serif";
+        let Ttext = display.measureText("How To Play");
+        display.fillText("How To Play", canvas.width-450 + instructionsImg.width/2 - Ttext.width/2, 135);
         display.font = "20px Serif";
         display.fillText("You are given a word, and as letters", canvas.width - 450 + 40, 75 + 90);
         display.fillText("fall from the sky, you have to catch", canvas.width - 450 + 40, 75 + 115);
@@ -396,8 +453,32 @@ function handleClicks(){
             }
         }
     }
+}
 
+function orderRankings(leader){
+    if (Object.keys(leader).length < 1){
+        return;
+    }
+
+    //Find winner
+    let max_wins = 0;
+    let user_key = "";
+    for (var key in leader){
+        let wins = leader[key][0];
+
+        if (wins >= max_wins){
+            max_wins = wins;
+            user_key = key;
+        }
+    }
     
+    if (rankings.includes(user_key)){
+        return;
+    }
+    rankings.push(user_key);
+    delete leader[user_key];
+
+    orderRankings(leader);
 }
 
 function resetGame(){
@@ -406,6 +487,8 @@ function resetGame(){
     caught_letters = [];
     win = false;
     lose = false;
+    won = false;
+    lost = false;
     confetti = [];
 }
 
