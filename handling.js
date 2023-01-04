@@ -9,6 +9,7 @@ var onHomescreen = true;
 var leaderboardVisible = false;
 var instructionsVisible = false;
 var selectionVisible = false;
+var userVisible = false;
 var homescreenLoopID = 0;
 var gameLoopID = 0;
 
@@ -17,10 +18,12 @@ var homescreenImg;
 var playImg;
 var questionImg;
 var trophyImg;
+var userImg;
 var backImg;
 var backgroundImg;
 var leaderboardImg;
 var instructionsImg;
+var userFrameImg;
 var levelsImg;
 var selectionImg;
 var easyImg;
@@ -31,6 +34,7 @@ var easyImg2;
 var mediumImg2;
 var hardImg2;
 var extremeImg2;
+var addUserImg;
 
 //Game variables
 var win = false;
@@ -271,7 +275,12 @@ function handleHomescreen(){
         leaderboard_copy[current_user] = [];
         leaderboard_copy[current_user][0] = 0;
         leaderboard_copy[current_user][1] = 0;
+        num_users++;
     }
+    if (available_users.includes(current_user)){
+        available_users.splice(available_users.indexOf(current_user), 1);
+    }
+    
     drawHomescreen();
 }
 
@@ -280,6 +289,26 @@ function handleHomescreen(){
 function drawHomescreen(){
     clear();
     display.drawImage(homescreenImg, 0, 0, canvas.width, canvas.height);
+
+    //Draw user selection
+    if (userVisible){
+        display.drawImage(userFrameImg, 50, 75);
+        display.font = "40px Serif";
+        display.drawImage(addUserImg, 50 + userFrameImg.width/2 - addUserImg.width/2, 426);
+        
+        let Ttext = display.measureText("Player Select");
+        display.fillText("Player Select", 50 + userFrameImg.width/2 - Ttext.width/2, 140);
+
+        display.font = "25px Serif";
+
+        if (available_users.length < 1){
+            let uText = display.measureText("Max users");
+            display.fillText("Max users", 50 + userFrameImg.width/2 - uText.width/2, 170);
+        }
+        
+        let userText = display.measureText("Current user: "+current_user);
+        display.fillText("Current user: "+current_user, 50 + userFrameImg.width/2 - userText.width/2, 540);
+    }
 
     if (selectionVisible){
         display.drawImage(levelsImg, 50, 75);
@@ -321,20 +350,36 @@ function drawHomescreen(){
 
         display.font = "25px Serif";
 
-        let Ttext = display.measureText("User            Wins : Losses");
-        display.fillText("User           Wins : Losses", canvas.width-450 + leaderboardImg.width/2 - Ttext.width/2, 180);
-
-        let y_pos = 250;
+        
+        display.fillText("User", canvas.width-450 + 95, 165);
+        display.fillText("Wins : Losses", canvas.width-450 + leaderboardImg.width/2 - 10, 165);
+        
+        let y_pos = 200;
+        let y_add = 50;
+        
+        
+        
         for (let i = 0; i < rankings.length; i++){
-            let text = display.measureText(rankings[i] + "             " + leaderboard[rankings[i]][0] + " : " + leaderboard[rankings[i]][1]);
-            display.fillText(rankings[i] + "             " + leaderboard[rankings[i]][0] + " : " + leaderboard[rankings[i]][1], canvas.width-450 + leaderboardImg.width/2 - text.width/2, y_pos);
-            let Btext = display.measureText("_____________________");
-            display.fillText("_____________________", canvas.width-450 + leaderboardImg.width/2 - Btext.width/2, y_pos + 10);
-            y_pos+=50;
+            if (num_users >= 7){
+                display.font = "15px Serif";
+                y_add = 30;
+            }
+            else{
+                display.font = "25px Serif";
+                y_add = 50;
+            }
+
+            display.fillText(rankings[i], canvas.width-450 + 90, y_pos);
+            display.fillText(leaderboard[rankings[i]][0] + " : "+leaderboard[rankings[i]][1], canvas.width-450 + leaderboardImg.width/2 + 60, y_pos);
+
+            display.font = "25px Serif";
+            let Btext = display.measureText("____________________");
+            display.fillText("____________________", canvas.width-450 + leaderboardImg.width/2 - Btext.width/2, y_pos + 5);
+            y_pos+=y_add;
         }
         
-        let user = display.measureText("Your user: "+current_user);
-        display.fillText("Your user: "+current_user, canvas.width-450 + leaderboardImg.width/2 - user.width/2, 540);
+        let userText = display.measureText("Current user: "+current_user);
+        display.fillText("Current user: "+current_user, canvas.width-450 + leaderboardImg.width/2 - userText.width/2, 540);
     }
     if (instructionsVisible){
         //Draw instructions
@@ -370,7 +415,8 @@ function drawHomescreen(){
     display.drawImage(playImg, canvas.width/2 - playImg.width/2, 150);
     display.drawImage(trophyImg, canvas.width/2 + 20, 350);
     display.drawImage(selectionImg, canvas.width/2 - selectionImg.width - 20, 350);
-    display.drawImage(questionImg, canvas.width/2 - questionImg.width/2, 500);
+    display.drawImage(questionImg, canvas.width/2 + 20, 500);
+    display.drawImage(userImg, canvas.width/2 - userImg.width - 20, 500);
 
     
     homescreenLoaded = true;
@@ -417,7 +463,7 @@ function handleClicks(){
             gameLoopID = setInterval(runGame, 20);
         }
 
-        if (mouseX >= canvas.width/2 + 20 &&mouseX <= canvas.width/2 + 20 + selectionImg.width && mouseY >= 350 && mouseY <= 350 + selectionImg.height){
+        if (mouseX >= canvas.width/2 + 20 && mouseX <= canvas.width/2 + 20 + selectionImg.width && mouseY >= 350 && mouseY <= 350 + selectionImg.height){
             //Toggle leaderboard
             instructionsVisible = false;
             leaderboardVisible = !leaderboardVisible;
@@ -425,13 +471,20 @@ function handleClicks(){
     
         if (mouseX >= canvas.width/2 - trophyImg.width - 20 && mouseX <= canvas.width/2 - 20 && mouseY >= 350 && mouseY <= 350 + trophyImg.height){
             //Toggle level selection
+            userVisible = false;
             selectionVisible = !selectionVisible;
         }
     
-        if (mouseX >= canvas.width/2 - questionImg.width/2 && mouseX <= canvas.width/2 - questionImg.width/2 + questionImg.width && mouseY >= 500 && mouseY <= 500 + trophyImg.height){
+        if (mouseX >= canvas.width/2 +20 && mouseX <= canvas.width/2 + 20 + questionImg.width && mouseY >= 500 && mouseY <= 500 + trophyImg.height){
             //Toggle instructions
             leaderboardVisible = false;
             instructionsVisible = !instructionsVisible;
+        }
+
+        if (mouseX >= canvas.width/2 - userImg.width - 20 && mouseX <= canvas.width/2 - userImg.width - 20 + questionImg.width && mouseY >= 500 && mouseY <= 500 + trophyImg.height){
+            //Toggle user frame
+            selectionVisible = false;
+            userVisible = !userVisible;
         }
 
         if (selectionVisible){
@@ -450,6 +503,16 @@ function handleClicks(){
             //Extreme button
             if (mouseX >= 50 + levelsImg.width/2 - extremeImg.width/2 && mouseX <= 50 + levelsImg.width/2 - extremeImg.width/2 + extremeImg.width && mouseY >= 426 && mouseY <= 426 + extremeImg.height){
                 difficulty = "Extreme";
+            }
+        }
+
+        if (userVisible){
+            //Add user button
+            if (mouseX >= 50 + userFrameImg.width/2 - addUserImg.width/2 && mouseX <= 50 + userFrameImg.width/2 - addUserImg.width/2 + addUserImg.width && mouseY >= 426 && mouseY <= 426 + addUserImg.height){
+                if (available_users.length > 0){
+                    current_user = available_users[Math.floor(Math.random()*available_users.length)];
+                }
+                
             }
         }
     }
@@ -507,6 +570,9 @@ function loadImages(){
     trophyImg = new Image();
     trophyImg.src = "Images/PixelTrophy.png";
 
+    userImg = new Image();
+    userImg.src = "Images/PixelUser.png";
+
     backImg = new Image();
     backImg.src = "Images/PixelBack.png";
 
@@ -518,6 +584,9 @@ function loadImages(){
 
     instructionsImg = new Image();
     instructionsImg.src = "Images/PixelInstructions.png";
+
+    userFrameImg = new Image();
+    userFrameImg.src = "Images/PixelUserFrame.png";
 
     levelsImg = new Image();
     levelsImg.src = "Images/PixelLevels.png";
@@ -548,6 +617,9 @@ function loadImages(){
 
     extremeImg2 = new Image();
     extremeImg2.src = "Images/PixelExtreme2.png";
+
+    addUserImg = new Image();
+    addUserImg.src = "Images/PixelAddUser.png";
 
     frameImg = new Image();
 }

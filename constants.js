@@ -13,10 +13,13 @@ var extreme_words = ["PNEUMONOULTRAMICROSCOPICSILICOVOLCANOCONIOSIS", "ANTIDISES
 
 var users = ["Alpha", "Valiant", "Chief", "Stormy", "Starry", "Lucky", "Golden", "Raven", "West", "Elite", "Phoenix", "Titan",
 "Blaze"];
+var available_users = ["Alpha", "Chief", "Stormy", "Lucky", "Golden", "West", "Elite", "Phoenix", "Titan",
+"Blaze"];
 
 var leaderboard = {};
 var leaderboard_copy = {};
 var rankings = [];
+var num_users = 0;
 
 var current_user = users[Math.floor(Math.random()*users.length)];
 var mouseX;
