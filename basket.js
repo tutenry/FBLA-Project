@@ -17,8 +17,11 @@ class Basket {
         this.y = y;
         display.fillStyle = "red";
         display.drawImage(this.img, this.x, y, this.width, this.height);
-        //Show hitbox
-        //display.strokeRect(this.x, this.y, this.width, this.height);
+        if (show_hitbox == true){
+            //Show hitbox
+            display.strokeRect(this.x, this.y, this.width, this.height);
+        }
+        
     }
 
     move(key){
@@ -57,6 +60,7 @@ class Basket {
                 }
                 else{
                     caught_letters.push(letter);
+                    
                 }
                 letter.caught = true;
                 

@@ -1,11 +1,17 @@
 class Letter {
-    constructor(){
+    constructor(letter){
         this.width = 40;
         this.height = 50;
         this.x = Math.floor(Math.random()*(canvas.width-this.width+1));
         this.y = -this.height;
         
-        this.setLetter();
+        if (letter){
+            this.letter = letter;
+        }
+        else{
+            this.setLetter();
+        }
+        
         this.speed = 3;
 
         this.caught = false;
@@ -13,7 +19,10 @@ class Letter {
         this.checkCollision();
     }
 
+    
+
     checkCollision(){
+        this.collides = false;
         for (let i = 0; i < letters.length; i++){
             let letter = letters[i];
             let x_check = false;
@@ -33,9 +42,9 @@ class Letter {
     }
 
     setLetter(){
-        let alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ<";
+        let alphabet2 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ<";
         let num = Math.floor(Math.random()*27);
-        this.letter = alphabet[num];
+        this.letter = alphabet2[num];
     }
     drop(){
         //Dropping
@@ -51,8 +60,12 @@ class Letter {
         display.fillStyle = "rgb(10, 10, 10)";
         display.font = "48px Serif";
         display.fillText(this.letter, this.x, this.y, this.width);
-        //Show hitbox
-        //display.strokeRect(this.x, this.y-this.height, this.width, this.height);
+
+        if (show_hitbox == true){
+            //Show hitbox
+            display.strokeRect(this.x, this.y-this.height, this.width, this.height);
+        }
+        
     }
     
 }

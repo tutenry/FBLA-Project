@@ -10,6 +10,7 @@ var leaderboardVisible = false;
 var instructionsVisible = false;
 var selectionVisible = false;
 var userVisible = false;
+var inputVisible = false;
 var homescreenLoopID = 0;
 var gameLoopID = 0;
 
@@ -35,6 +36,7 @@ var mediumImg2;
 var hardImg2;
 var extremeImg2;
 var addUserImg;
+var swapUserImg;
 
 //Game variables
 var win = false;
@@ -44,15 +46,23 @@ var caught_letters = [];
 var basket;
 var won = false;
 var lost = false;
+var timeoutSet = false;
+var timeoutID = 0;
 
 //Tracking key movement
 let keyd = false;
 let key = "";
 
+//Homescreen data
+var stringTyped = "";
+var changeUser = false;
+
 document.addEventListener("keydown", function(event){
-    if (event.code == "KeyA" || event.code == "KeyD"){
-        keyd = true;
-        key = event.code;
+    if (onHomescreen == false){
+        if (event.code == "KeyA" || event.code == "KeyD"){
+            keyd = true;
+            key = event.code;
+        }
     }
     if (event.code === "Escape"){
         //Exit program
@@ -62,6 +72,18 @@ document.addEventListener("keydown", function(event){
             clearInterval(gameLoopID);
         }, 100);
         
+    }
+    if (onHomescreen && inputVisible){
+        if (event.key === "Backspace"){
+            stringTyped = stringTyped.substring(0, stringTyped.length-1);
+        }
+        else if (event.key === "Enter"){
+            inputVisible = false;
+            changeUser = true;
+        }
+        else if (alphabet.includes(event.key)){
+            stringTyped+=event.key;
+        }
     }
 });
 
@@ -110,7 +132,14 @@ function runGame(){
         if (word != caughts && word.length == caughts.length){
             lose = true;
         }
-        
+
+        if (caughts.length >= 1 && caughts.substring(caughts.length - 1, caughts.length) != word.substring(caughts.length-1 , caughts.length)){
+            nextLetter = "<";
+        }
+        else{
+            nextLetter = word.substring(caughts.length, caughts.length + 1);
+        }
+
         createLetters();
         draw();
     }
@@ -135,6 +164,40 @@ function createLetters(){
             letters.push(l);
         }
         
+    }
+    
+    let found = false;
+    for (let i = 0; i < letters.length; i++){
+        if (letters[i].letter == nextLetter){
+            found = true;
+        }
+    }
+    
+    //If desired letter is not falling after a certain number of seconds, spawn desired letter
+    if (found == false){
+        timeoutID = setTimeout(function(){
+            for (let i = 0; i < letters.length; i++){
+                if (letters[i].letter == nextLetter){
+                    found = true;
+                }
+            }
+            if (found == false){
+                let l = new Letter(nextLetter);
+                
+                while (l.collides == true){
+                    l.x = Math.floor(Math.random()*(canvas.width-this.width+1));
+                    l.checkCollision();
+                }
+                
+                
+                letters.push(l);
+            }
+        }, letter_spawn_time);
+    }
+    else{
+        if (timeoutID != 0){
+            clearTimeout(timeoutID);
+        }
     }
     
     
@@ -162,18 +225,6 @@ function draw(){
 
     //Draw back button
     display.drawImage(backImg, 50, canvas.height - backImg.height - 20);
-    
-    //TEMPORARY Draw caught letters
-    /*
-    let printString = "";
-    for (let i = 0; i < caught_letters.length; i++){
-        printString+=caught_letters[i].letter;
-    }
-    display.fillStyle = "rgb(0,0,0)";
-    display.font = "50px Serif";
-    display.fillText(printString, 50, 50);
-    */
-    
 
     //Draw word squares
     for (let i = 0; i < word.length; i++){
@@ -216,6 +267,21 @@ function winGame(){
 
     if (won == false){
         leaderboard[current_user][0] = leaderboard[current_user][0]+1;
+        
+        if (difficulty === "Easy"){
+            leaderboard[current_user][2] = leaderboard[current_user][2] + 5;
+        }
+        else if (difficulty === "Medium"){
+            leaderboard[current_user][2] = leaderboard[current_user][2] + 15;
+        }
+        else if (difficulty === "Hard"){
+            leaderboard[current_user][2] = leaderboard[current_user][2] + 50;
+        }
+        else{
+            leaderboard[current_user][2] = leaderboard[current_user][2] + 150;
+        }
+        
+        leaderboard_copy[current_user] = leaderboard[current_user];
     }
     
 
@@ -248,11 +314,13 @@ function loseGame(){
 
     if (lost == false){
         leaderboard[current_user][1] = leaderboard[current_user][1]+1;
+        
+        leaderboard_copy[current_user] = leaderboard[current_user];
     }
 
     draw();
-
-    display.fillText("You Lose :(", 500, 500);
+    let LText = display.measureText("Wrong word! Try again");
+    display.fillText("Wrong word! Try again", canvas.width/2 - LText.width/2, 500);
 
     if (lost == false){
         lost = true;
@@ -267,18 +335,34 @@ function handleHomescreen(){
     canvas.height = window.innerHeight;
     canvas.width = window.innerWidth;
 
+    
+    //Set leaderboard
     if (leaderboard[current_user] == undefined){
         leaderboard[current_user] = [];
         leaderboard[current_user][0] = 0;
         leaderboard[current_user][1] = 0;
+        leaderboard[current_user][2] = 0;
 
-        leaderboard_copy[current_user] = [];
-        leaderboard_copy[current_user][0] = 0;
-        leaderboard_copy[current_user][1] = 0;
         num_users++;
     }
+    if (leaderboard_copy[current_user] == undefined){
+        for (var key in leaderboard){
+            leaderboard_copy[key] = leaderboard[key];
+        }
+    }
+
     if (available_users.includes(current_user)){
         available_users.splice(available_users.indexOf(current_user), 1);
+    }
+    //console.log(leaderboard_copy);
+    ran = false;
+    orderRankings(leaderboard_copy);
+    
+
+    if (users.includes(stringTyped) && leaderboard[stringTyped] != undefined && changeUser == true){
+        current_user = stringTyped;
+        changeUser = false;
+        stringTyped = "";
     }
     
     drawHomescreen();
@@ -294,7 +378,9 @@ function drawHomescreen(){
     if (userVisible){
         display.drawImage(userFrameImg, 50, 75);
         display.font = "40px Serif";
-        display.drawImage(addUserImg, 50 + userFrameImg.width/2 - addUserImg.width/2, 426);
+        display.fillStyle = "rgb(10,10,10)";
+        display.drawImage(addUserImg, 50 + userFrameImg.width/2 - addUserImg.width/2, 400);
+        display.drawImage(swapUserImg, 50+userFrameImg.width/2 - swapUserImg.width/2, 180);
         
         let Ttext = display.measureText("Player Select");
         display.fillText("Player Select", 50 + userFrameImg.width/2 - Ttext.width/2, 140);
@@ -303,11 +389,32 @@ function drawHomescreen(){
 
         if (available_users.length < 1){
             let uText = display.measureText("Max users");
-            display.fillText("Max users", 50 + userFrameImg.width/2 - uText.width/2, 170);
+            display.fillText("Max users", 50 + userFrameImg.width/2 - uText.width/2, 75+userFrameImg.height - 70);
         }
         
         let userText = display.measureText("Current user: "+current_user);
-        display.fillText("Current user: "+current_user, 50 + userFrameImg.width/2 - userText.width/2, 540);
+        display.fillText("Current user: "+current_user, 50 + userFrameImg.width/2 - userText.width/2, 75+userFrameImg.height - 40);
+
+        if (inputVisible){
+            drawBorder(50 + userFrameImg.width/2 - (200/2), 280, 200, 60, 2);
+            display.fillStyle = "rgb(150,150,150)";
+            display.fillRect(50 + userFrameImg.width/2 - (200/2), 280, 200, 60);
+            display.fillStyle = "rgb(10,10,10)";
+            display.font = "40px Serif";
+            let typedText = display.measureText(stringTyped);
+            
+            if (stringTyped === ""){
+                let preText = display.measureText("Enter user");
+                display.fillText("Enter user", 50 + userFrameImg.width/2 - preText.width/2, 320, 200);
+            }
+            if (typedText.width >= 200){
+                display.fillText(stringTyped, 50 + userFrameImg.width/2 - (200/2), 320, 200);
+            }
+            else{
+                display.fillText(stringTyped, 50 + userFrameImg.width/2 - typedText.width/2, 320, 200);
+            }
+
+        }
     }
 
     if (selectionVisible){
@@ -341,18 +448,18 @@ function drawHomescreen(){
     }
     if (leaderboardVisible){
         //Draw leaderboard
-        orderRankings(leaderboard_copy);
         display.drawImage(leaderboardImg, canvas.width - 450, 75);
 
         display.font = "40px Serif"
+        display.fillStyle = "rgb(10,10,10)";
         let leaderboardText = display.measureText("Leaderboard");
         display.fillText("Leaderboard", canvas.width-450 + leaderboardImg.width/2 - leaderboardText.width/2, 135);
 
-        display.font = "25px Serif";
+        display.font = "20px Serif";
 
         
         display.fillText("User", canvas.width-450 + 95, 165);
-        display.fillText("Wins : Losses", canvas.width-450 + leaderboardImg.width/2 - 10, 165);
+        display.fillText("Points -- Wins : Losses", canvas.width-450 + leaderboardImg.width/2 - 40, 165);
         
         let y_pos = 200;
         let y_add = 50;
@@ -370,7 +477,7 @@ function drawHomescreen(){
             }
 
             display.fillText(rankings[i], canvas.width-450 + 90, y_pos);
-            display.fillText(leaderboard[rankings[i]][0] + " : "+leaderboard[rankings[i]][1], canvas.width-450 + leaderboardImg.width/2 + 60, y_pos);
+            display.fillText(leaderboard[rankings[i]][2] + " -- " + leaderboard[rankings[i]][0] + " : "+leaderboard[rankings[i]][1], canvas.width-450 + leaderboardImg.width/2 + 20, y_pos);
 
             display.font = "25px Serif";
             let Btext = display.measureText("____________________");
@@ -389,6 +496,7 @@ function drawHomescreen(){
 
         //Text
         display.font = "40px Serif";
+        display.fillStyle = "rgb(10,10,10)";
         let Ttext = display.measureText("How To Play");
         display.fillText("How To Play", canvas.width-450 + instructionsImg.width/2 - Ttext.width/2, 135);
         display.font = "20px Serif";
@@ -465,6 +573,7 @@ function handleClicks(){
 
         if (mouseX >= canvas.width/2 + 20 && mouseX <= canvas.width/2 + 20 + selectionImg.width && mouseY >= 350 && mouseY <= 350 + selectionImg.height){
             //Toggle leaderboard
+            
             instructionsVisible = false;
             leaderboardVisible = !leaderboardVisible;
         }
@@ -512,25 +621,36 @@ function handleClicks(){
                 if (available_users.length > 0){
                     current_user = available_users[Math.floor(Math.random()*available_users.length)];
                 }
+            }
+
+            //Swap user button
+            if (mouseX >= 50 + userFrameImg.width/2 - swapUserImg.width/2 && mouseX <= 50 + userFrameImg.width/2 - swapUserImg.width/2 + swapUserImg.width && mouseY >= 180 && mouseY <= 180 + swapUserImg.height){
+                inputVisible = !inputVisible;
                 
             }
         }
     }
 }
-
+let ran = false;
 function orderRankings(leader){
     if (Object.keys(leader).length < 1){
         return;
     }
 
-    //Find winner
-    let max_wins = 0;
+    if (ran == false){
+        rankings = [];
+        ran = true;
+        
+    }
+
+    //Find user with most points
+    let max_points = 0;
     let user_key = "";
     for (var key in leader){
-        let wins = leader[key][0];
+        let points = leader[key][2];
 
-        if (wins >= max_wins){
-            max_wins = wins;
+        if (points >= max_points){
+            max_points = points;
             user_key = key;
         }
     }
@@ -555,6 +675,10 @@ function resetGame(){
     confetti = [];
 }
 
+function drawBorder(x, y, width, height, thickness){
+    display.fillStyle = "rgb(10,10,10)";
+    display.fillRect(x - thickness, y - thickness, width + thickness*2, height + thickness*2)
+}
 
 
 function loadImages(){
@@ -620,6 +744,9 @@ function loadImages(){
 
     addUserImg = new Image();
     addUserImg.src = "Images/PixelAddUser.png";
+
+    swapUserImg = new Image();
+    swapUserImg.src = "Images/PixelSwapUser.png";
 
     frameImg = new Image();
 }

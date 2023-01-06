@@ -1,5 +1,8 @@
 var letter_probability = 41;
-var word = "L";
+var letter_spawn_time = 6000;
+var show_hitbox = false;
+var word = "LIGHT";
+var nextLetter = "";
 var difficulty = "Easy";
 
 var easy_words = ["CAT", "EAT", "NET", "RED", "BIG", "NOW", "GET", "AIR", "ANY", "HOT", "JET", "SUN", "ZOO", "RUN",
@@ -28,3 +31,5 @@ var mouseY;
 var spacer_width = 10;
 const max_confetti = 100;
 const confetti_probability = 3;
+
+var alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
