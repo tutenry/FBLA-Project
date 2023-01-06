@@ -15,28 +15,10 @@ var homescreenLoopID = 0;
 var gameLoopID = 0;
 
 //Initialize images
-var homescreenImg;
-var playImg;
-var questionImg;
-var trophyImg;
-var userImg;
-var backImg;
-var backgroundImg;
-var leaderboardImg;
-var instructionsImg;
-var userFrameImg;
-var levelsImg;
-var selectionImg;
-var easyImg;
-var mediumImg;
-var hardImg;
-var extremeImg;
-var easyImg2;
-var mediumImg2;
-var hardImg2;
-var extremeImg2;
-var addUserImg;
-var swapUserImg;
+var homescreenImg, addUserImg, swapUserImg, addUserImg2, swapUserImg2, titleImg;
+var easyImg, mediumImg, hardImg, extremeImg, easyImg2, mediumImg2, hardImg2, extremeImg2;
+var backgroundImg, leaderboardImg, instructionsImg, userFrameImg, levelsImg;
+var playImg, questionImg, trophyImg, userImg, selectionImg, backImg, playImg2, questionImg2, trophyImg2, userImg2, selectionImg2, backImg2;
 
 //Game variables
 var win = false;
@@ -59,7 +41,7 @@ var changeUser = false;
 
 document.addEventListener("keydown", function(event){
     if (onHomescreen == false){
-        if (event.code == "KeyA" || event.code == "KeyD"){
+        if (event.code == "KeyA" || event.code == "KeyD" || event.key == "ArrowLeft" || event.key == "ArrowRight"){
             keyd = true;
             key = event.code;
         }
@@ -173,7 +155,7 @@ function createLetters(){
         }
     }
     
-    //If desired letter is not falling after a certain number of seconds, spawn desired letter
+    //If needed letter is not falling after a certain number of seconds, spawn needed letter
     if (found == false){
         timeoutID = setTimeout(function(){
             for (let i = 0; i < letters.length; i++){
@@ -224,7 +206,12 @@ function draw(){
     }
 
     //Draw back button
-    display.drawImage(backImg, 50, canvas.height - backImg.height - 20);
+    if (mouseX >= 50 && mouseX <= 50 + backImg.width && mouseY >= canvas.height - backImg.height - 20 && mouseY <= canvas.height- 20){
+        display.drawImage(backImg2, 50, canvas.height - backImg.height - 20);
+    }else{
+        display.drawImage(backImg, 50, canvas.height - backImg.height - 20);
+    }
+    
 
     //Draw word squares
     for (let i = 0; i < word.length; i++){
@@ -238,6 +225,7 @@ function draw(){
         }
         else if (caught_letters[i] != undefined && word[i] != caught_letters[i].letter){
             mistake = true;
+            strikes++;
         }
         spacer_width = 10;
         let frameImg = getFrameImg(word[i], caught, mistake);
@@ -320,7 +308,7 @@ function loseGame(){
 
     draw();
     let LText = display.measureText("Wrong word! Try again");
-    display.fillText("Wrong word! Try again", canvas.width/2 - LText.width/2, 500);
+    display.fillText("Wrong word! Try again", canvas.width/2 - LText.width/2, 400);
 
     if (lost == false){
         lost = true;
@@ -374,13 +362,26 @@ function drawHomescreen(){
     clear();
     display.drawImage(homescreenImg, 0, 0, canvas.width, canvas.height);
 
+    //Draw title
+    display.drawImage(titleImg, canvas.width/2 - titleImg.width/2, 30);
+
     //Draw user selection
     if (userVisible){
         display.drawImage(userFrameImg, 50, 75);
         display.font = "40px Serif";
         display.fillStyle = "rgb(10,10,10)";
-        display.drawImage(addUserImg, 50 + userFrameImg.width/2 - addUserImg.width/2, 400);
-        display.drawImage(swapUserImg, 50+userFrameImg.width/2 - swapUserImg.width/2, 180);
+
+        if (mouseX >= 50 + userFrameImg.width/2 - addUserImg.width/2 && mouseX <= 50 + userFrameImg.width/2 - addUserImg.width/2 + addUserImg.width && mouseY >= 400 && mouseY <= 400 + addUserImg.height){
+            display.drawImage(addUserImg2, 50 + userFrameImg.width/2 - addUserImg2.width/2, 400);
+        }else{
+            display.drawImage(addUserImg, 50 + userFrameImg.width/2 - addUserImg.width/2, 400);
+        }
+        if (mouseX >= 50 + userFrameImg.width/2 - swapUserImg.width/2 && mouseX <= 50 + userFrameImg.width/2 - swapUserImg.width/2 + swapUserImg.width && mouseY >= 180 && mouseY <= 180 + swapUserImg.height){
+            display.drawImage(swapUserImg2, 50+userFrameImg.width/2 - swapUserImg2.width/2, 180);
+        }else{2
+            display.drawImage(swapUserImg, 50+userFrameImg.width/2 - swapUserImg.width/2, 180);
+        }
+        
         
         let Ttext = display.measureText("Player Select");
         display.fillText("Player Select", 50 + userFrameImg.width/2 - Ttext.width/2, 140);
@@ -421,25 +422,25 @@ function drawHomescreen(){
         display.drawImage(levelsImg, 50, 75);
 
         //Draw level buttons
-        if (difficulty == "Easy"){
+        if (difficulty == "Easy" || (mouseX >= 50 + levelsImg.width/2 - easyImg2.width/2 && mouseX <= 50 + levelsImg.width/2 - easyImg2.width/2 + easyImg2.width && mouseY >= 150 && mouseY <= 150 + easyImg2.height)){
             display.drawImage(easyImg2, 50 + levelsImg.width/2 - easyImg2.width/2, 150);
         }
         else{
             display.drawImage(easyImg, 50 + levelsImg.width/2 - easyImg.width/2, 150);
         }
-        if (difficulty == "Medium"){
+        if (difficulty == "Medium" || (mouseX >= 50 + levelsImg.width/2 - mediumImg2.width && mouseX <= 50 + levelsImg.width/2 - mediumImg2.width/2 + mediumImg2.width && mouseY >= 242 && mouseY <= 242 + mediumImg2.height)){
             display.drawImage(mediumImg2, 50 + levelsImg.width/2 - mediumImg2.width/2, 242);
         }
         else{
             display.drawImage(mediumImg, 50 + levelsImg.width/2 - mediumImg.width/2, 242);
         }
-        if (difficulty == "Hard"){
+        if (difficulty == "Hard" || (mouseX >= 50 + levelsImg.width/2 - hardImg2.width/2 && mouseX <= 50 + levelsImg.width/2 - hardImg2.width/2 + hardImg2.width && mouseY >= 334 && mouseY <= 334 + hardImg2.height)){
             display.drawImage(hardImg2, 50 + levelsImg.width/2 - hardImg2.width/2, 334);
         }
         else{
             display.drawImage(hardImg, 50 + levelsImg.width/2 - hardImg.width/2, 334);
         }
-        if (difficulty == "Extreme"){
+        if (difficulty == "Extreme" || (mouseX >= 50 + levelsImg.width/2 - extremeImg2.width/2 && mouseX <= 50 + levelsImg.width/2 - extremeImg2.width/2 + extremeImg2.width && mouseY >= 426 && mouseY <= 426 + extremeImg2.height)){
             display.drawImage(extremeImg2, 50 + levelsImg.width/2 - extremeImg2.width/2, 426);
         }
         else{
@@ -514,19 +515,39 @@ function drawHomescreen(){
         display.fillText("they can also remove correct letters!", canvas.width - 450 + 40, 75 + 335);
 
         display.fillText("To move your basket, use 'a' for left", canvas.width - 450 + 40, 75 + 370);
-        display.fillText("and 'd' for right", canvas.width - 450 + 40, 75 + 395);
+        display.fillText("and 'd' for right or use arrow keys", canvas.width - 450 + 40, 75 + 395);
 
         display.fillText("To stop the program, press escape", canvas.width - 450 + 40, 75 + 430);
     }
     
     //Draw buttons
-    display.drawImage(playImg, canvas.width/2 - playImg.width/2, 150);
-    display.drawImage(trophyImg, canvas.width/2 + 20, 350);
-    display.drawImage(selectionImg, canvas.width/2 - selectionImg.width - 20, 350);
-    display.drawImage(questionImg, canvas.width/2 + 20, 500);
-    display.drawImage(userImg, canvas.width/2 - userImg.width - 20, 500);
-
+    if (mouseX >= canvas.width/2 - playImg.width/2 && mouseX <= canvas.width/2 - playImg.width/2 + playImg.width && mouseY >= 150 && mouseY <= 150 + playImg.height){
+        display.drawImage(playImg2, canvas.width/2 - playImg.width/2, 150);
+    }else{
+        display.drawImage(playImg, canvas.width/2 - playImg.width/2, 150);
+    }
+    if (mouseX >= canvas.width/2 + 20 && mouseX <= canvas.width/2 + 20 + trophyImg.width && mouseY >= 350 && mouseY <= 350 + trophyImg.height){
+        display.drawImage(trophyImg2, canvas.width/2 + 20, 350);
+    }else{
+        display.drawImage(trophyImg, canvas.width/2 + 20, 350);
+    }
+    if (mouseX >= canvas.width/2 - selectionImg.width - 20 && mouseX <= canvas.width/2 - 20 && mouseY >= 350 && mouseY <= 350 + selectionImg.height){
+        display.drawImage(selectionImg2, canvas.width/2 - selectionImg2.width - 20, 350);
+    }else{
+        display.drawImage(selectionImg, canvas.width/2 - selectionImg.width - 20, 350);
+    }
+    if (mouseX >= canvas.width/2 + 20 && mouseX <= canvas.width/2 + 20 + questionImg.width && mouseY >= 500 && mouseY <= 500 + questionImg.height){
+        display.drawImage(questionImg2, canvas.width/2 + 20, 500);
+    }else{
+        display.drawImage(questionImg, canvas.width/2 + 20, 500);
+    }
+    if (mouseX >= canvas.width/2 - userImg.width - 20 && mouseX <= canvas.width/2 - 20 && mouseY >= 500 && mouseY <= 500 + userImg.height){
+        display.drawImage(userImg2, canvas.width/2 - userImg.width - 20, 500);
+    }else{
+        display.drawImage(userImg, canvas.width/2 - userImg.width - 20, 500);
+    }
     
+
     homescreenLoaded = true;
 }
     
@@ -617,7 +638,7 @@ function handleClicks(){
 
         if (userVisible){
             //Add user button
-            if (mouseX >= 50 + userFrameImg.width/2 - addUserImg.width/2 && mouseX <= 50 + userFrameImg.width/2 - addUserImg.width/2 + addUserImg.width && mouseY >= 426 && mouseY <= 426 + addUserImg.height){
+            if (mouseX >= 50 + userFrameImg.width/2 - addUserImg.width/2 && mouseX <= 50 + userFrameImg.width/2 - addUserImg.width/2 + addUserImg.width && mouseY >= 400 && mouseY <= 400 + addUserImg.height){
                 if (available_users.length > 0){
                     current_user = available_users[Math.floor(Math.random()*available_users.length)];
                 }
@@ -747,6 +768,33 @@ function loadImages(){
 
     swapUserImg = new Image();
     swapUserImg.src = "Images/PixelSwapUser.png";
+
+    titleImg = new Image();
+    titleImg.src = "Images/PixelTitle.png";
+
+    playImg2 = new Image();
+    playImg2.src = "Images/PixelPlay2.png";
+
+    questionImg2 = new Image();
+    questionImg2.src = "Images/PixelQuestion2.png";
+
+    trophyImg2 = new Image();
+    trophyImg2.src = "Images/PixelTrophy2.png";
+
+    selectionImg2 = new Image();
+    selectionImg2.src = "Images/PixelSelect2.png";
+
+    userImg2 = new Image();
+    userImg2.src = "Images/PixelUser2.png";
+
+    backImg2 = new Image();
+    backImg2.src = "Images/PixelBack2.png";
+
+    addUserImg2 = new Image();
+    addUserImg2.src = "Images/PixelAddUser2.png";
+
+    swapUserImg2 = new Image();
+    swapUserImg2.src = "Images/PixelSwapUser2.png";
 
     frameImg = new Image();
 }

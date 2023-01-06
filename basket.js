@@ -25,7 +25,7 @@ class Basket {
     }
 
     move(key){
-        if (key == "KeyA"){
+        if (key == "KeyA" || key == "ArrowLeft"){
             if (this.x <= 0){
                 return;
             }

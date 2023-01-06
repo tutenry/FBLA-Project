@@ -1,5 +1,7 @@
 var letter_probability = 41;
-var letter_spawn_time = 6000;
+var letter_spawn_time = 10000;
+var max_strikes = 3;
+var strikes = 0;
 var show_hitbox = false;
 var word = "LIGHT";
 var nextLetter = "";
@@ -12,7 +14,7 @@ var medium_words = ["BETTER", "MARKET", "HEALTH", "CREATE", "BRANCH", "BOTTOM", 
 var hard_words = ["ABHORRENT", "CHILDHOOD", "TEXTBOOK", "ABILITIES", "EXPERTISE", "RECOGNIZE", "TECHNIQUE",
 "MOSQUITOES", "MINIMIZE", "DIFFICULT", "SENTENCES", "CHOCOLATE", "ADVANTAGE", "STRENGTHS"];
 var extreme_words = ["PNEUMONOULTRAMICROSCOPICSILICOVOLCANOCONIOSIS", "ANTIDISESTABLISHMENTARIANISM", "INCOMPREHENSIBILITY",
-"HIPPOPOTOMONSTROSESQUIPPEDALIOPHOBIA", "INCONSEQUENTIAL", "HYPOTHETICALLY"];
+"HIPPOPOTOMONSTROSESQUIPPEDALIOPHOBIA", "INCONSEQUENTIAL", "HYPOTHETICALLY", "ABCDEFGHIJKLMNOPQRSTUVWXYZ"];
 
 var users = ["Alpha", "Valiant", "Chief", "Stormy", "Starry", "Lucky", "Golden", "Raven", "West", "Elite", "Phoenix", "Titan",
 "Blaze"];
