@@ -225,7 +225,7 @@ function draw(){
         }
         else if (caught_letters[i] != undefined && word[i] != caught_letters[i].letter){
             mistake = true;
-            strikes++;
+        
         }
         spacer_width = 10;
         let frameImg = getFrameImg(word[i], caught, mistake);

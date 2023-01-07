@@ -1,7 +1,5 @@
 var letter_probability = 41;
 var letter_spawn_time = 10000;
-var max_strikes = 3;
-var strikes = 0;
 var show_hitbox = false;
 var word = "LIGHT";
 var nextLetter = "";
