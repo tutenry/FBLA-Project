@@ -1,3 +1,8 @@
+/*
+* This document contains inmportant variables used in the game
+* The variables are stored here for easy access for manipulation
+*/
+
 var letter_probability = 41;
 var letter_spawn_time = 10000;
 var show_hitbox = false;

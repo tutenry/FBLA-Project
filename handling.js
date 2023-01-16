@@ -1,4 +1,4 @@
-//Access the canvas
+//Access the canvas document in the html file
 var canvas = document.getElementById("canvas");
 var display = canvas.getContext("2d");
 
@@ -39,6 +39,7 @@ let key = "";
 var stringTyped = "";
 var changeUser = false;
 
+//Let the document listen for key presses and mouse clicks and movements
 document.addEventListener("keydown", function(event){
     if (onHomescreen == false){
         if (event.code == "KeyA" || event.code == "KeyD" || event.key == "ArrowLeft" || event.key == "ArrowRight"){
@@ -94,27 +95,32 @@ function runGame(){
     canvas.height = window.innerHeight;
     canvas.width = window.innerWidth;
 
-    
+    //If the game is still being run
     if (running && win == false && lose == false){
+        //Handle basket movements and drawing
         basket.draw();
         basket.catch();
         if (keyd == true){
             basket.move(key);
         }
 
+        //Create a string of all caught letters to compare with the game word
         let caughts = "";
         for (let i = 0; i < caught_letters.length; i++){
             caughts+=caught_letters[i].letter;
         }
         
+        //Win game if the strings match up
         if (word === caughts){
             win = true;
         }
 
+        //Lose the game if the strings do not match up and are the same length
         if (word != caughts && word.length == caughts.length){
             lose = true;
         }
 
+        //Set the next letter needed
         if (caughts.length >= 1 && caughts.substring(caughts.length - 1, caughts.length) != word.substring(caughts.length-1 , caughts.length)){
             nextLetter = "<";
         }
@@ -131,14 +137,14 @@ function runGame(){
     }
 
     if (lose){
-        //Go back to home screen
         loseGame();
     }
     
 }
 
-
+//Create letters to fall
 function createLetters(){
+    //If the letter probability allows for a letter to be made, create the letter
     let num = Math.floor(Math.random()*letter_probability);
     if (num == 1){
         let l = new Letter();
@@ -147,7 +153,7 @@ function createLetters(){
         }
         
     }
-    
+    //Search for the needed letter in the list of all letters on the screen
     let found = false;
     for (let i = 0; i < letters.length; i++){
         if (letters[i].letter == nextLetter){
@@ -155,7 +161,7 @@ function createLetters(){
         }
     }
     
-    //If needed letter is not falling after a certain number of seconds, spawn needed letter
+    //If needed letter is not falling after a certain number of seconds, spawn the needed letter
     if (found == false){
         timeoutID = setTimeout(function(){
             for (let i = 0; i < letters.length; i++){
@@ -170,32 +176,30 @@ function createLetters(){
                     l.x = Math.floor(Math.random()*(canvas.width-this.width+1));
                     l.checkCollision();
                 }
-                
-                
                 letters.push(l);
             }
         }, letter_spawn_time);
     }
     else{
+        //If the letter is found, cancel the timer to spawn the needed letter
         if (timeoutID != 0){
             clearTimeout(timeoutID);
         }
     }
     
-    
+    //Make all the letters fall
     for (let i = 0; i < letters.length; i++){
         letters[i].drop();
     }
 }
 
-
+//Draw everything on the game screen
 function draw(){
+    //Clear the screen
     clear();
 
     //Draw background imag
     display.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
-
-    
 
     //Draw basket
     basket.draw(canvas.height/1.4);
@@ -213,13 +217,12 @@ function draw(){
     }
     
 
-    //Draw word squares
+    //Draw the game word
     for (let i = 0; i < word.length; i++){
-        
-        
         let caught = false;
         let mistake = false;
         
+        //Define if the letter to be shown is in a caught, mistake, or uncaught state
         if (caught_letters[i] != undefined && word[i] == caught_letters[i].letter){
             caught = true;
         }
@@ -227,6 +230,7 @@ function draw(){
             mistake = true;
         
         }
+        //Draw the game word on the screen with the images provided in the top middle of the screen, no matter the length of the word
         spacer_width = 10;
         let frameImg = getFrameImg(word[i], caught, mistake);
         let distance_between = i*(frameImg.width + spacer_width);
@@ -248,12 +252,14 @@ function draw(){
     }
 }
 
+//Initialize confetti object list
 var confetti = [];
+//Run this when the game is won
 function winGame(){
-
     if (running == false){return;}
 
     if (won == false){
+        //Update scores on the leaderboard
         leaderboard[current_user][0] = leaderboard[current_user][0]+1;
         
         if (difficulty === "Easy"){
@@ -271,60 +277,55 @@ function winGame(){
         
         leaderboard_copy[current_user] = leaderboard[current_user];
     }
-    
-
-    
-
+    //Draw the game screen
     draw();
 
+    //Draw the confetti
     if (confetti.length < max_confetti){
         if (Math.floor(Math.random()*confetti_probability)==0){
-            //Make confetti
+            //Make confetti objects if the probability allows
             let cp = new Confetti();
             if (cp.collides == false){
                 confetti.push(cp);
             } 
         }
     }
-    
-
+    //Make the confetti fall
     for (let i = 0; i < confetti.length; i++){
         confetti[i].fall();
     }
-
+    //Make sure the points will not be added more than once for a single win
     if (won == false){
         won = true;
     }
 }
-
+//Run this when the game is lost
 function loseGame(){
     if (running == false){return;}
-
+    //Update leaderboard stats
     if (lost == false){
         leaderboard[current_user][1] = leaderboard[current_user][1]+1;
-        
         leaderboard_copy[current_user] = leaderboard[current_user];
     }
-
+    //Draw the game screen
     draw();
+    //Draw lose text
     let LText = display.measureText("Wrong word! Try again");
     display.fillText("Wrong word! Try again", canvas.width/2 - LText.width/2, 400);
-
+    //Make sure the leaderboard stats are not changed more than once for a single loss
     if (lost == false){
         lost = true;
     }
 }
 
-
-
-//Homescreen handling
+//Handle the homescreen functions of the game
 function handleHomescreen(){
+    //Close the game if it is not meant to be run and change the game size to the screen size
     if (running == false){clear();return;}
     canvas.height = window.innerHeight;
     canvas.width = window.innerWidth;
-
     
-    //Set leaderboard
+    //Set the leaderboard
     if (leaderboard[current_user] == undefined){
         leaderboard[current_user] = [];
         leaderboard[current_user][0] = 0;
@@ -342,30 +343,31 @@ function handleHomescreen(){
     if (available_users.includes(current_user)){
         available_users.splice(available_users.indexOf(current_user), 1);
     }
-    //console.log(leaderboard_copy);
-    ran = false;
-    orderRankings(leaderboard_copy);
     
+    ran = false;
+    //Order the leaderboard based on points
+    orderRankings(leaderboard_copy);
 
+    //Change users if one is typed
     if (users.includes(stringTyped) && leaderboard[stringTyped] != undefined && changeUser == true){
         current_user = stringTyped;
         changeUser = false;
         stringTyped = "";
     }
-    
+    //Draw the homescreen
     drawHomescreen();
 }
 
-
-
+//Run this to draw the homescreen
 function drawHomescreen(){
+    //Clear and draw the homescreen background image
     clear();
     display.drawImage(homescreenImg, 0, 0, canvas.width, canvas.height);
 
     //Draw title
     display.drawImage(titleImg, canvas.width/2 - titleImg.width/2, 30);
 
-    //Draw user selection
+    //Draw user selection frame
     if (userVisible){
         display.drawImage(userFrameImg, 50, 75);
         display.font = "40px Serif";
@@ -417,7 +419,7 @@ function drawHomescreen(){
 
         }
     }
-
+    //Draw the level selection frame
     if (selectionVisible){
         display.drawImage(levelsImg, 50, 75);
 
@@ -447,6 +449,7 @@ function drawHomescreen(){
             display.drawImage(extremeImg, 50 + levelsImg.width/2 - extremeImg.width/2, 426);
         }
     }
+    //Draw the leaderboard frame
     if (leaderboardVisible){
         //Draw leaderboard
         display.drawImage(leaderboardImg, canvas.width - 450, 75);
@@ -458,14 +461,11 @@ function drawHomescreen(){
 
         display.font = "20px Serif";
 
-        
         display.fillText("User", canvas.width-450 + 95, 165);
         display.fillText("Points -- Wins : Losses", canvas.width-450 + leaderboardImg.width/2 - 40, 165);
         
         let y_pos = 200;
         let y_add = 50;
-        
-        
         
         for (let i = 0; i < rankings.length; i++){
             if (num_users >= 7){
@@ -489,9 +489,8 @@ function drawHomescreen(){
         let userText = display.measureText("Current user: "+current_user);
         display.fillText("Current user: "+current_user, canvas.width-450 + leaderboardImg.width/2 - userText.width/2, 540);
     }
+    //Draw the instructions frame
     if (instructionsVisible){
-        //Draw instructions
-        
         //Frame
         display.drawImage(instructionsImg, canvas.width - 450, 75);
 
@@ -520,7 +519,7 @@ function drawHomescreen(){
         display.fillText("To stop the program, press escape", canvas.width - 450 + 40, 75 + 430);
     }
     
-    //Draw buttons
+    //Draw the homescreen buttons
     if (mouseX >= canvas.width/2 - playImg.width/2 && mouseX <= canvas.width/2 - playImg.width/2 + playImg.width && mouseY >= 150 && mouseY <= 150 + playImg.height){
         display.drawImage(playImg2, canvas.width/2 - playImg.width/2, 150);
     }else{
@@ -547,15 +546,15 @@ function drawHomescreen(){
         display.drawImage(userImg, canvas.width/2 - userImg.width - 20, 500);
     }
     
-
     homescreenLoaded = true;
 }
     
+//Handle all clicks
 function handleClicks(){
-    
+    //Do nothing if the homescreen is not loaded yet
     if (homescreenLoaded == false){return;}
 
-    //Back button
+    //Handle the clicks on the back button in the game
     if (onHomescreen == false){
         if (mouseX >= 50 && mouseX <= 50 + backImg.width && mouseY >= canvas.height - backImg.height - 20 && mouseY <= canvas.height - 20){
             onHomescreen = true;
@@ -566,13 +565,14 @@ function handleClicks(){
     }
 
     if (onHomescreen){
-        //Play button
+        //Handle play button clicks
         if (mouseX >= canvas.width/2 - playImg.width/2 && mouseX <= canvas.width/2 - playImg.width/2 + playImg.width && mouseY >= 150 && mouseY <= 150 + playImg.height){
-            //Play game
+            //Play the game if the mouse is clicked within the borders of the button
             clearInterval(homescreenLoopID);
             resetGame();
             onHomescreen = false;
             basket = new Basket(canvas.width/2 - canvas.width/16, canvas.height/1.4, 126, 60);
+            //Set the difficulty of the game
             if (difficulty == "Easy"){
                 word = easy_words[Math.floor(Math.random() * easy_words.length)];
                 letter_probability = 41;
@@ -591,32 +591,27 @@ function handleClicks(){
             }
             gameLoopID = setInterval(runGame, 20);
         }
-
+        //Handle the leaderboard button
         if (mouseX >= canvas.width/2 + 20 && mouseX <= canvas.width/2 + 20 + selectionImg.width && mouseY >= 350 && mouseY <= 350 + selectionImg.height){
-            //Toggle leaderboard
-            
             instructionsVisible = false;
             leaderboardVisible = !leaderboardVisible;
         }
-    
+        //Handle the level selection button
         if (mouseX >= canvas.width/2 - trophyImg.width - 20 && mouseX <= canvas.width/2 - 20 && mouseY >= 350 && mouseY <= 350 + trophyImg.height){
-            //Toggle level selection
             userVisible = false;
             selectionVisible = !selectionVisible;
         }
-    
+        //Handle the instructions button
         if (mouseX >= canvas.width/2 +20 && mouseX <= canvas.width/2 + 20 + questionImg.width && mouseY >= 500 && mouseY <= 500 + trophyImg.height){
-            //Toggle instructions
             leaderboardVisible = false;
             instructionsVisible = !instructionsVisible;
         }
-
+        //Handle the user selection button
         if (mouseX >= canvas.width/2 - userImg.width - 20 && mouseX <= canvas.width/2 - userImg.width - 20 + questionImg.width && mouseY >= 500 && mouseY <= 500 + trophyImg.height){
-            //Toggle user frame
             selectionVisible = false;
             userVisible = !userVisible;
         }
-
+        //Handle the individual difficulty buttons
         if (selectionVisible){
             //Easy button
             if (mouseX >= 50 + levelsImg.width/2 - easyImg.width/2 && mouseX <= 50 + levelsImg.width/2 - easyImg.width/2 + easyImg.width && mouseY >= 150 && mouseY <= 150 + easyImg.height){
@@ -635,7 +630,7 @@ function handleClicks(){
                 difficulty = "Extreme";
             }
         }
-
+        //Handle the two different user selection buttons
         if (userVisible){
             //Add user button
             if (mouseX >= 50 + userFrameImg.width/2 - addUserImg.width/2 && mouseX <= 50 + userFrameImg.width/2 - addUserImg.width/2 + addUserImg.width && mouseY >= 400 && mouseY <= 400 + addUserImg.height){
@@ -653,7 +648,9 @@ function handleClicks(){
     }
 }
 let ran = false;
+//Order the leaderboard based on number of points
 function orderRankings(leader){
+    //If the leaderboard is empty, do nothing
     if (Object.keys(leader).length < 1){
         return;
     }
@@ -679,12 +676,16 @@ function orderRankings(leader){
     if (rankings.includes(user_key)){
         return;
     }
+
+    //Add the highest player into the rankings list
     rankings.push(user_key);
     delete leader[user_key];
 
+    //Use recursion to find the order of the rest of the players
     orderRankings(leader);
 }
 
+//Reset the game after a win or loss
 function resetGame(){
     clearInterval(gameLoopID);
     letters = [];
@@ -695,13 +696,12 @@ function resetGame(){
     lost = false;
     confetti = [];
 }
-
+//Draw borders on certain images
 function drawBorder(x, y, width, height, thickness){
     display.fillStyle = "rgb(10,10,10)";
     display.fillRect(x - thickness, y - thickness, width + thickness*2, height + thickness*2)
 }
-
-
+//Preload the images to increase efficiency
 function loadImages(){
     homescreenImg = new Image();
     homescreenImg.src = "Images/PixelHomescreen.png";
@@ -799,6 +799,7 @@ function loadImages(){
     frameImg = new Image();
 }
 
+//Get the letter frame image depending on what letter you need and whether it is in a caught, mistake, or uncaught state
 function getFrameImg(letter, caught, mistake){
     let frameImg = new Image();
     if (caught){
@@ -814,6 +815,7 @@ function getFrameImg(letter, caught, mistake){
     return frameImg;
 }
 
+//Clear the screen
 function clear(){
     display.clearRect(0,0,canvas.width, canvas.height);
 }

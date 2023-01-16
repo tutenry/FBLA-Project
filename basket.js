@@ -1,6 +1,10 @@
+/*
+* This document allows for a basket object to be made and handled outside of the main handling document
+*/
 
 class Basket {
     constructor(_x, _y, w, h){
+        //Setting basic attributes
         this.x = _x;
         this.y = _y;
         this.width = w;
@@ -14,6 +18,7 @@ class Basket {
     
 
     draw(y=this.y){
+        //Draw the basket onto the screen
         this.y = y;
         display.fillStyle = "red";
         display.drawImage(this.img, this.x, y, this.width, this.height);
@@ -25,6 +30,7 @@ class Basket {
     }
 
     move(key){
+        //Detect key presses to move the basket in a certain direction
         if (key == "KeyA" || key == "ArrowLeft"){
             if (this.x <= 0){
                 return;
@@ -42,12 +48,14 @@ class Basket {
     }
 
     catch(){
+        //Detect collisions with letters to keep track of which letters are meant to be caught
         for (let i = 0; i < letters.length; i++){
             let letter = letters[i];
 
             let x_check = false;
             let y_check = false;
 
+            //If the letter is within the boundaries of the basket, catch it
             if (letter.x + letter.width >= basket.x && letter.x <= basket.x + basket.width){
                 x_check = true;
             }
